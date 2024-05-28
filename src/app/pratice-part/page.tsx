@@ -3,7 +3,8 @@ import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import React from "react";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import { createClient } from "@/utils/supabase/client";
-import TableTwo from "./(components)/QuestionTable";
+import PraticeSkillList from "./(components)/PraticeSkillList";
+
 
 export const metadata: Metadata = {
     title: "Next.js Chart | TailAdmin - Next.js Dashboard Template",
@@ -12,19 +13,21 @@ export const metadata: Metadata = {
 };
 
 
-const BasicChartPage: React.FC = async () => {
+const PraticePartPage: React.FC = async () => {
     const supabase = createClient();
 
-    const { data: questions } = await supabase.from("question").select();
-    // return <pre>{JSON.stringify(notes, null, 2)}</pre>
+    const { data: part } = await supabase.from("part").select();
+
+    console.log(part);
+
     return (
         <DefaultLayout>
-            <Breadcrumb pageName="Questions" />
+            <Breadcrumb pageName="Luyện tập" />
             <div className="flex flex-col gap-10">
-                <TableTwo questions={questions} />
+                <PraticeSkillList part={part} />
             </div>
         </DefaultLayout>
     );
 };
 
-export default BasicChartPage;
+export default PraticePartPage;

@@ -3,28 +3,27 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 
-interface Note {
+interface Question {
     question_id: number;
-    title: string;
-    correct_letter: string;
-    imageurl: string;
-    audiourl: string;
+    questions: string[];
+    answers: { [key: string]: string }[]; // Adjusted to reflect the possible structure of answers
+    imageurl?: string | null;
+    audiourl?: string | null;
     test_id: number;
-    explanation: string | null;
-    part_id: number;
+    part_id: number | null;
 }
 
-const TableTwo = ({ notes }: { notes: Note[] }) => {
-    //   const [notes, setNotes] = useState<Note[]>([]);
+const TableTwo = ({ questions }: { questions: Question[] }) => {
+    //   const [questions, setQuestions] = useState<Question[]>([]);
 
     //   useEffect(() => {
     //     const fetchData = async () => {
     //       const supabase = createClient();
-    //       const { data, error } = await supabase.from<Note>("question").select();
+    //       const { data, error } = await supabase.from<Question>("question").select();
     //       if (error) {
     //         console.error("Error fetching data:", error);
     //       } else {
-    //         setNotes(data || []);
+    //         setQuestions(data || []);
     //       }
     //     };
 
@@ -57,37 +56,44 @@ const TableTwo = ({ notes }: { notes: Note[] }) => {
                 </div>
             </div>
 
-            {notes.map((note, key) => (
+            {questions.map((question, key) => (
                 <div
                     className="grid grid-cols-7 border-t border-stroke px-4 py-4.5 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5"
                     key={key}
                 >
                     <div className="col-span-1 flex items-center">
-                        <p className="text-sm text-black dark:text-white">{note.question_id}</p>
+                        <p className="text-sm text-black dark:text-white">{question.question_id}</p>
                     </div>
                     <div className="col-span-3 flex items-center">
-                        <p className="text-sm text-black dark:text-white">{note.title}</p>
+                        <p className="text-sm text-black dark:text-white">{question.questions.join(' ')}</p>
                     </div>
-                    <div className="col-span-2 flex items-center">
-                        <p className="text-sm text-black dark:text-white">{note.correct_letter}</p>
-                    </div>
+                    {question.answers != null ? (
+                        <div className="col-span-2 flex items-center">
+                            <p className="text-sm text-black dark:text-white">{question.answers.map(answer => Object.values(answer).join(', ')).join(', ')}</p>
+                        </div>
+                    ) : (
+                        <div className="col-span-2 flex items-center">
+                            <p className="text-sm text-black dark:text-white">No Answer</p>
+                        </div>
+                    )}
                     <div className="col-span-1 flex items-center">
                         <div className="h-12.5 w-15 rounded-md">
-                            {note.imageurl === null || note.imageurl === "" ? <p>No Image</p> : <img
-                                src={note.imageurl}
-                                width={60}
-                                height={50}
-                                alt="Image"
-                            />}
+                            {question.imageurl ? (
+                                <img src={question.imageurl} width={60} height={50} alt="Question Image" />
+                            ) : (
+                                <p>No Image</p>
+                            )}
                         </div>
                     </div>
                     <div className="col-span-1 flex items-center">
-                        {note.audiourl === null || note.audiourl === "" ? <p>No Audio</p> :
+                        {question.audiourl ? (
                             <audio controls>
-                                <source src={note.audiourl} type="audio/mpeg" />
+                                <source src={question.audiourl} type="audio/mpeg" />
                                 Your browser does not support the audio element.
-                            </audio>}
-
+                            </audio>
+                        ) : (
+                            <p>No Audio</p>
+                        )}
                     </div>
                 </div>
             ))}
