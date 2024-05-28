@@ -44,7 +44,7 @@ const PartList = ({ partname, partlist }) => {
                     </div>
                     <div className="col-span-1 flex items-center">
                         <Button
-                            onClick={() => router.push(`/pratice-part/${partname}/${part.id}`)}
+                            onClick={() => router.push(`/practice/${partname}/${part.id}`)}
                             className='text-white'
                         >
                             Xem

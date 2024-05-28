@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from '@/components/ui/button';
 
 
-const PraticeSkillList = ({ part }) => {
+const PracticeSkillList = ({ part }) => {
 
 
     const router = useRouter();
@@ -31,10 +31,24 @@ const PraticeSkillList = ({ part }) => {
     return (
         <div className='rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark'>
             <div className="px-4 py-6 md:px-6 xl:px-7.5">
-                <h4 className="text-xl font-semibold text-black dark:text-white">
-                    Các kỹ năng luyện tập
-                </h4>
-                <p className="text-sm text-black dark:text-white">Truy cập các thông tin câu hỏi luyện tập</p>
+                <div className='flex flex-row justify-between'>
+                    <div className='flex flex-col'>
+                        <h4 className="text-xl font-semibold text-black dark:text-white">
+                            Các kỹ năng luyện tập
+                        </h4>
+                        <p className="text-sm text-black dark:text-white">Truy cập các thông tin câu hỏi luyện tập</p>
+                    </div>
+                    <div>
+                        <Button
+                            onClick={() => {
+                                router.push(`/practice/add`);
+                            }}
+                            className='text-white'
+                        >
+                            Tạo câu hỏi
+                        </Button>
+                    </div>
+                </div>
             </div>
             <div className="grid grid-cols-7 border-t border-stroke px-4 py-4.5 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5">
                 <div className="col-span-1 flex items-center">
@@ -64,7 +78,7 @@ const PraticeSkillList = ({ part }) => {
                     <div className="col-span-1 flex items-center">
                         <Button
                             onClick={() => {
-                                router.push(`/pratice-part/${skill.skill}`);
+                                router.push(`/practice/${skill.skill}`);
                             }}
                             className='text-white'
                         >
@@ -77,4 +91,4 @@ const PraticeSkillList = ({ part }) => {
     )
 }
 
-export default PraticeSkillList;
+export default PracticeSkillList;

@@ -11,6 +11,8 @@ import { createClient } from "@/utils/supabase/client";
 import ListeningQuestionLayout from './ListeningQuestionLayout';
 import Loader from '@/components/Loader';
 import SelectPart from './SelectPart';
+import toast, { Toaster } from 'react-hot-toast';
+import SpeakingQuestionLayout from './SpeakingQuestionLayout';
 
 const AddLayout = () => {
     const supabase = createClient();
@@ -32,12 +34,13 @@ const AddLayout = () => {
             ],
         },
     ]);
-
-    const [explanation, setExplanation] = React.useState([]);
     const [selectedTypeID, setSelectedTypeID] = React.useState(0);
     const [questionImageFile, setQuestionImageFile] = React.useState([]);
     const [questionAudioFile, setQuestionAudioFile] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(false);
+
+    const [answerSpeaking, setAnswerSpeaking] = React.useState('');
+    const [explanationSpeaking, setExplanationSpeaking] = React.useState('');
 
     const uploadReadingQuestion = async () => {
         setIsLoading(true);
@@ -77,8 +80,10 @@ const AddLayout = () => {
 
             if (error) {
                 console.error('Error uploading reading question:', error);
+                toast.error('Có lỗi xảy ra khi tạo câu hỏi');
             } else {
                 console.log('Reading question uploaded successfully:', data);
+                toast.success('Câu hỏi đã được tạo thành công');
             }
         } catch (error) {
             console.error('Error:', error);
@@ -89,15 +94,19 @@ const AddLayout = () => {
 
 
     const uploadListeningQuestion = async () => {
-
         try {
-            const { error: imgUploadError } = await supabase.storage.from("question_image").upload('Listening/' + questionImageFile[0].name, questionImageFile[0]);
-            const { data: imgUrl } = supabase.storage.from('question_image').getPublicUrl('Listening/' + questionImageFile[0].name);
-            setImageUrl(imgUrl.publicUrl);
+            setIsLoading(true);
+            if (questionImageFile.length > 0) {
+                const { error: imgUploadError } = await supabase.storage.from("question_image").upload('Listening/' + questionImageFile[0].name, questionImageFile[0]);
+                const { data: imgUrl } = supabase.storage.from('question_image').getPublicUrl('Listening/' + questionImageFile[0].name);
+                setImageUrl(imgUrl.publicUrl);
+            }
 
-            const { error: audioUploadError } = await supabase.storage.from("audio").upload('Listening/' + questionAudioFile[0].name, questionAudioFile[0]);
-            const { data: audioUrl } = supabase.storage.from('question_image').getPublicUrl('Listening/' + questionAudioFile[0].name);
-            setAudioUrl(audioUrl.publicUrl);
+            if (questionAudioFile.length > 0) {
+                const { error: audioUploadError } = await supabase.storage.from("audio").upload('Listening/' + questionAudioFile[0].name, questionAudioFile[0]);
+                const { data: audioUrl } = supabase.storage.from('question_image').getPublicUrl('Listening/' + questionAudioFile[0].name);
+                setAudioUrl(audioUrl.publicUrl);
+            }
 
             const formattedQuestionsData = questionsData.map((questionObj) => {
                 const answers = questionObj.answers.map(answerObj => answerObj.answer);
@@ -131,8 +140,10 @@ const AddLayout = () => {
 
             if (error) {
                 console.error('Error uploading listening question:', error);
+                toast.error('Có lỗi xảy ra khi tạo câu hỏi');
             } else {
                 console.log('Listening question uploaded successfully:', data);
+                toast.success('Câu hỏi đã được tạo thành công');
             }
 
         } catch (error) {
@@ -142,6 +153,44 @@ const AddLayout = () => {
         }
     };
 
+    const uploadSpeakingQuestion = async () => {
+        setIsLoading(true);
+        if (questionImageFile.length > 0) {
+            const { error: imgUploadError } = await supabase.storage.from("question_image").upload('Speaking/' + questionImageFile[0].name, questionImageFile[0]);
+            const { data: imgUrl } = supabase.storage.from('question_image').getPublicUrl('Speaking/' + questionImageFile[0].name);
+            setImageUrl(imgUrl.publicUrl);
+        }
+
+        if (questionAudioFile.length > 0) {
+            const { error: audioUploadError } = await supabase.storage.from("audio").upload('Speaking/' + questionAudioFile[0].name, questionAudioFile[0]);
+            const { data: audioUrl } = supabase.storage.from('question_image').getPublicUrl('Speaking/' + questionAudioFile[0].name);
+            setAudioUrl(audioUrl.publicUrl);
+        }
+
+        const dataToInsert = {
+            test_id: selectedTypeID,
+            part_id: partID,
+            answer: answerSpeaking,
+            explanation: explanationSpeaking,
+            audioUrl: extractLink(audioUrl),
+            imageUrl: extractLink(imageUrl),
+        };
+
+        // Insert the data into the questions table
+        const { data, error } = await supabase
+            .from('speaking_question')
+            .insert(dataToInsert);
+
+        if (error) {
+            console.error('Error uploading speaking question:', error);
+            toast.error('Có lỗi xảy ra khi tạo câu hỏi');
+        } else {
+            console.log('Speaking question uploaded successfully:', data);
+            toast.success('Câu hỏi đã được tạo thành công');
+        }
+        setIsLoading(false);
+    }
+
 
     function extractLink(jsonObj) {
         // Check if the provided object has a property named 'publicUrl'
@@ -150,7 +199,7 @@ const AddLayout = () => {
             return jsonObj.publicUrl;
         } else {
             // If 'publicUrl' is not found, return an appropriate message or handle the error
-            return "Link not found";
+            return "";
         }
     }
 
@@ -159,12 +208,14 @@ const AddLayout = () => {
 
     return (
         <div>
+            <Toaster />
             {isLoading ? (
                 <div className='flex h-screen items-center justify-center'>
                     <Loader />
                 </div>
             ) : (
-                <>                <SelectQuestionType setQuestionType={setQuestionType} setSelectedTypeID={setSelectedTypeID} />
+                <>
+                    <SelectQuestionType setQuestionType={setQuestionType} setSelectedTypeID={setSelectedTypeID} />
                     {questionType === 'Reading' && (
                         <div>
                             <SelectPart questionType={questionType} setPartID={setPartID} />
@@ -198,6 +249,30 @@ const AddLayout = () => {
                                 className="w-full mt-5 inline-flex items-center justify-center rounded-md bg-meta-3 px-10 py-4 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-10"
                                 onClick={() => {
                                     uploadListeningQuestion();
+                                }}
+                            >
+                                Tạo câu hỏi
+                            </Link>
+                        </div>
+                    )}
+
+
+                    {questionType == 'Speaking' && (
+                        <div>
+                            <SelectPart questionType={questionType} setPartID={setPartID} />
+                            <SpeakingQuestionLayout
+                                setAnswerSpeaking={setAnswerSpeaking}
+                                setExplanationSpeaking={setExplanationSpeaking}
+                                questionImageFile={questionImageFile}
+                                setQuestionImageFile={setQuestionImageFile}
+                                questionAudioFile={questionAudioFile}
+                                setQuestionAudioFile={setQuestionAudioFile}
+                            />
+                            <Link
+                                href="#"
+                                className="w-full mt-5 inline-flex items-center justify-center rounded-md bg-meta-3 px-10 py-4 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-10"
+                                onClick={() => {
+                                    uploadSpeakingQuestion();
                                 }}
                             >
                                 Tạo câu hỏi
