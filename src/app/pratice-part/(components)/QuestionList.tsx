@@ -105,7 +105,7 @@ const QuestionList = ({ partId, partName }) => {
                         {question.type === 'speaking' && question.audioUrl && <audio controls src={question.audioUrl} />}
                     </div>
                     <div className="col-span-1 flex items-center">
-                        <Button className='text-white' onClick={() => router.push(`/edit/${question.question_id}`)}>Edit</Button>
+                        <Button className='text-white' onClick={() => router.push(`/edit/${question.question_id}`)}>Chỉnh sửa</Button>
                     </div>
                 </div>
             ))}

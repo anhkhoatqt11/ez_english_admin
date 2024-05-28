@@ -1,39 +1,32 @@
 import React from 'react';
 
-const Answers = ({ index, answer, onAnswerChange }) => {
-    const handleTextChange = (e) => {
-        onAnswerChange(index, { ...answer, answer: e.target.value });
+const Answers = ({ qIndex, index, answer, onAnswerChange }) => {
+    const handleAnswerTextChange = (e) => {
+        const updatedAnswer = { ...answer, answer: e.target.value };
+        onAnswerChange(qIndex, index, updatedAnswer);
     };
 
-    const handleCheckboxChange = (e) => {
-        onAnswerChange(index, { ...answer, isCorrect: e.target.checked });
+    const handleIsCorrectChange = (e) => {
+        const updatedAnswer = { ...answer, isCorrect: e.target.checked };
+        onAnswerChange(qIndex, index, updatedAnswer);
     };
 
     return (
-        <>
-            <div className='mt-5'>
-                <input
-                    type="text"
-                    placeholder='Nhập câu trả lời'
-                    className="w-full rounded-lg border border-stroke bg-white py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                    value={answer.answer}
-                    onChange={handleTextChange}
-                />
-            </div>
-            <div className='mt-3'>
-                <label className="flex flex-col items-end">
-                    <input
-                        type="checkbox"
-                        className="rounded border-stroke text-primary focus:ring-primary dark:border-form-strokedark dark:focus:ring-primary"
-                        checked={answer.isCorrect}
-                        onChange={handleCheckboxChange}
-                    />
-                    <span className="ml-2 text-sm font-medium text-black dark:text-white">
-                        Đáp án đúng
-                    </span>
-                </label>
-            </div>
-        </>
+        <div className="mt-2 flex items-center">
+            <input
+                type="text"
+                placeholder="Nhập đáp án"
+                className="w-full rounded-lg border border-stroke bg-white py-2 pl-4 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                value={answer.answer}
+                onChange={handleAnswerTextChange}
+            />
+            <input
+                type="checkbox"
+                className="ml-3"
+                checked={answer.isCorrect}
+                onChange={handleIsCorrectChange}
+            />
+        </div>
     );
 };
 

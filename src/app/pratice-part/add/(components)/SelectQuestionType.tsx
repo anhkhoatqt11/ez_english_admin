@@ -95,18 +95,6 @@ const SelectQuestionType: React.FC<SelectQuestionTypeProps> = ({ setQuestionType
                             {item.skill_type}
                         </option>
                     ))}
-                    {/* <option value="" disabled className="text-body dark:text-bodydark">
-            Select Country
-          </option>
-          <option value="USA" className="text-body dark:text-bodydark">
-            USA
-          </option>
-          <option value="UK" className="text-body dark:text-bodydark">
-            UK
-          </option>
-          <option value="Canada" className="text-body dark:text-bodydark">
-            Canada
-          </option> */}
                 </select>
 
                 <span className="absolute right-4 top-1/2 z-10 -translate-y-1/2">
