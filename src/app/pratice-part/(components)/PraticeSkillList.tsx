@@ -27,9 +27,6 @@ const PraticeSkillList = ({ part }) => {
         count,
     }));
 
-    function switchPage(skill) {
-        router.push(`/pratice-part/${skill}`);
-    }
 
     return (
         <div className='rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark'>
@@ -66,7 +63,9 @@ const PraticeSkillList = ({ part }) => {
                     </div>
                     <div className="col-span-1 flex items-center">
                         <Button
-                            onClick={() => switchPage(skill.skill)}
+                            onClick={() => {
+                                router.push(`/pratice-part/${skill.skill}`);
+                            }}
                             className='text-white'
                         >
                             Xem
