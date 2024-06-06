@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+"use client";
+
+import React, { useState, useEffect } from 'react';
 import { createClient } from "@/utils/supabase/client";
 import { FileDialog } from '@/components/FileDialog';
 import { VideoDialog } from '@/components/ui/VideoDialog';
 
-const ListeningQuestionLayout = ({ setQuestionsData, questionImageFile, setQuestionImageFile, questionAudioFile, setQuestionAudioFile }) => {
-    const supabase = createClient();
+const ListeningQuestionLayout = ({ setQuestionsData, questionImageFile, setQuestionImageFile, questionAudioFile, setQuestionAudioFile, initialQuestionsData, defaultQuestionImageFile, defaultAudioQuestionFile }) => {
 
-    const [questionsData, setQuestionsDataState] = useState([
+    const [questionsData, setQuestionsDataState] = useState(initialQuestionsData || [
         {
             question: "",
             explanation: "",
@@ -19,18 +20,20 @@ const ListeningQuestionLayout = ({ setQuestionsData, questionImageFile, setQuest
         },
     ]);
 
+    useEffect(() => {
+        setQuestionsData(questionsData);
+    }, [questionsData, setQuestionsData]);
+
     const handleQuestionChange = (index, newQuestion) => {
         const updatedQuestionsData = [...questionsData];
         updatedQuestionsData[index].question = newQuestion;
         setQuestionsDataState(updatedQuestionsData);
-        setQuestionsData(updatedQuestionsData);
     };
 
     const handleExplanationChange = (index, newExplanation) => {
         const updatedQuestionsData = [...questionsData];
         updatedQuestionsData[index].explanation = newExplanation;
         setQuestionsDataState(updatedQuestionsData);
-        setQuestionsData(updatedQuestionsData);
     };
 
     const handleCorrectAnswerChange = (qIndex, aIndex) => {
@@ -42,7 +45,6 @@ const ListeningQuestionLayout = ({ setQuestionsData, questionImageFile, setQuest
             }))
         }));
         setQuestionsDataState(updatedQuestionsData);
-        setQuestionsData(updatedQuestionsData);
     };
 
     const handleAddQuestion = () => {
@@ -56,14 +58,13 @@ const ListeningQuestionLayout = ({ setQuestionsData, questionImageFile, setQuest
                 { answer: "D", isCorrect: false }
             ],
         };
-        setQuestionsDataState([...questionsData, newQuestion]);
-        setQuestionsData([...questionsData, newQuestion]);
+        const updatedQuestionsData = [...questionsData, newQuestion];
+        setQuestionsDataState(updatedQuestionsData);
     };
 
     const handleRemoveQuestion = (index) => {
         const updatedQuestionsData = questionsData.filter((_, qIndex) => qIndex !== index);
         setQuestionsDataState(updatedQuestionsData);
-        setQuestionsData(updatedQuestionsData);
     };
 
     return (
@@ -133,17 +134,15 @@ const ListeningQuestionLayout = ({ setQuestionsData, questionImageFile, setQuest
                     File hình ảnh
                 </label>
                 <div className="w-1/3 h-41 border-1 rounded">
-                    {questionImageFile[0] != null && (
-                        <img
-                            src={
-                                questionImageFile[0]?.preview ||
-                                questionImageFile[0]?.url ||
-                                questionImageFile
-                            }
-                            alt={questionImageFile[0]?.name}
-                            className={`h-[360px] w-full rounded-md object-cover object-center`}
-                        />
-                    )}
+                    <img
+                        src={
+                            questionImageFile[0]?.preview ||
+                            questionImageFile[0]?.url ||
+                            defaultQuestionImageFile
+                        }
+                        alt={questionImageFile[0]?.name}
+                        className={`h-[360px] w-full rounded-md object-cover object-center`}
+                    />
                 </div>
                 <FileDialog
                     name="images"
@@ -160,7 +159,7 @@ const ListeningQuestionLayout = ({ setQuestionsData, questionImageFile, setQuest
                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                     File âm thanh
                 </label>
-                <audio src={questionAudioFile[0]?.preview || questionAudioFile[0]?.url || questionAudioFile} controls>
+                <audio src={questionAudioFile[0]?.preview || questionAudioFile[0]?.url || defaultAudioQuestionFile} controls>
                 </audio>
                 <VideoDialog
                     name="audio"

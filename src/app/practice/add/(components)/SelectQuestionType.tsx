@@ -2,43 +2,56 @@
 import React, { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 
-
 type SelectQuestionTypeProps = {
     setQuestionType: (value: string) => void;
     setSelectedTypeID: (value: number) => void;
+    selectedTypeID: number; // Added selectedTypeID prop
 };
 
-const SelectQuestionType: React.FC<SelectQuestionTypeProps> = ({ setQuestionType, setSelectedTypeID }) => {
+const SelectQuestionType: React.FC<SelectQuestionTypeProps> = ({ setQuestionType, setSelectedTypeID, selectedTypeID }) => {
     const supabase = createClient();
 
     const [selectedOption, setSelectedOption] = useState<string>("");
     const [isOptionSelected, setIsOptionSelected] = useState<boolean>(false);
-    const [type, setType] = useState<any>([]);
+    const [type, setType] = useState<{ test_id: number; skill_type: string }[]>([]);
+    const [disabled, setDisabled] = useState<boolean>(false);
 
     const changeTextColor = () => {
         setIsOptionSelected(true);
     };
 
-
     useEffect(() => {
         const fetchData = async () => {
-            const { data: type_list } = await supabase.from("test").select("test_id, skill_type");
-            console.log(type_list);
-            setType(type_list || []);
+            const { data: type_list, error } = await supabase.from("skill").select("test_id, skill_type");
+            if (error) {
+                console.error('Error fetching skill types:', error);
+            } else {
+                setType(type_list || []);
+            }
         };
         fetchData();
-    }, []);
+    }, [supabase]);
+
+    useEffect(() => {
+        // Set initial selected option based on selectedTypeID
+        const selectedType = type.find((item) => item.test_id === selectedTypeID);
+        if (selectedType) {
+            setSelectedOption(selectedType.skill_type);
+            setQuestionType(selectedType.skill_type);
+            setDisabled(true);
+            changeTextColor();
+        }
+    }, [selectedTypeID, type, setQuestionType]);
 
     useEffect(() => {
         setQuestionType(selectedOption);
 
         // Find the corresponding type object
-        const selectedType = type.find((item: any) => item.skill_type === selectedOption);
+        const selectedType = type.find((item) => item.skill_type === selectedOption);
         if (selectedType) {
-            console.log(selectedType.test_id);
             setSelectedTypeID(selectedType.test_id);
         }
-    }, [selectedOption]);
+    }, [selectedOption, setQuestionType, setSelectedTypeID, type]);
 
     return (
         <div>
@@ -84,8 +97,8 @@ const SelectQuestionType: React.FC<SelectQuestionTypeProps> = ({ setQuestionType
                         setSelectedOption(e.target.value);
                         changeTextColor();
                     }}
-                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent px-12 py-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? "text-black dark:text-white" : ""
-                        }`}
+                    disabled={disabled}
+                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent px-12 py-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? "text-black dark:text-white" : ""}`}
                 >
                     <option value="" disabled className="text-body dark:text-bodydark">
                         Lựa chọn loại câu hỏi

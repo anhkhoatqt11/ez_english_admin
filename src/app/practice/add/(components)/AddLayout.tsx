@@ -13,11 +13,12 @@ import Loader from '@/components/Loader';
 import SelectPart from './SelectPart';
 import toast, { Toaster } from 'react-hot-toast';
 import SpeakingQuestionLayout from './SpeakingQuestionLayout';
+import WritingQuestionLayout from './WritingQuestionLayout';
+import { da } from 'date-fns/locale';
 
 const AddLayout = () => {
     const supabase = createClient();
     const [questionType, setQuestionType] = React.useState('');
-    const [question, setQuestion] = React.useState([]);
     const [imageUrl, setImageUrl] = React.useState('');
     const [audioUrl, setAudioUrl] = React.useState('');
     const [partID, setPartID] = React.useState(0);
@@ -98,13 +99,13 @@ const AddLayout = () => {
             setIsLoading(true);
             if (questionImageFile.length > 0) {
                 const { error: imgUploadError } = await supabase.storage.from("question_image").upload('Listening/' + questionImageFile[0].name, questionImageFile[0]);
-                const { data: imgUrl } = supabase.storage.from('question_image').getPublicUrl('Listening/' + questionImageFile[0].name);
+                const { data: imgUrl } = await supabase.storage.from('question_image').getPublicUrl('Listening/' + questionImageFile[0].name);
                 setImageUrl(imgUrl.publicUrl);
             }
 
             if (questionAudioFile.length > 0) {
                 const { error: audioUploadError } = await supabase.storage.from("audio").upload('Listening/' + questionAudioFile[0].name, questionAudioFile[0]);
-                const { data: audioUrl } = supabase.storage.from('question_image').getPublicUrl('Listening/' + questionAudioFile[0].name);
+                const { data: audioUrl } = await supabase.storage.from('question_image').getPublicUrl('Listening/' + questionAudioFile[0].name);
                 setAudioUrl(audioUrl.publicUrl);
             }
 
@@ -129,8 +130,8 @@ const AddLayout = () => {
                     explanation: q.explanation,
                     correct_answer: q.correct_answer
                 })),
-                audiourl: extractLink(audioUrl),
-                imageurl: extractLink(imageUrl),
+                audiourl: audioUrl,
+                imageurl: imageUrl,
             };
 
             // Insert the data into the questions table
@@ -157,13 +158,13 @@ const AddLayout = () => {
         setIsLoading(true);
         if (questionImageFile.length > 0) {
             const { error: imgUploadError } = await supabase.storage.from("question_image").upload('Speaking/' + questionImageFile[0].name, questionImageFile[0]);
-            const { data: imgUrl } = supabase.storage.from('question_image').getPublicUrl('Speaking/' + questionImageFile[0].name);
+            const { data: imgUrl } = await supabase.storage.from('question_image').getPublicUrl('Speaking/' + questionImageFile[0].name);
             setImageUrl(imgUrl.publicUrl);
         }
 
         if (questionAudioFile.length > 0) {
             const { error: audioUploadError } = await supabase.storage.from("audio").upload('Speaking/' + questionAudioFile[0].name, questionAudioFile[0]);
-            const { data: audioUrl } = supabase.storage.from('question_image').getPublicUrl('Speaking/' + questionAudioFile[0].name);
+            const { data: audioUrl } = await supabase.storage.from('question_image').getPublicUrl('Speaking/' + questionAudioFile[0].name);
             setAudioUrl(audioUrl.publicUrl);
         }
 
@@ -172,8 +173,8 @@ const AddLayout = () => {
             part_id: partID,
             answer: answerSpeaking,
             explanation: explanationSpeaking,
-            audioUrl: extractLink(audioUrl),
-            imageUrl: extractLink(imageUrl),
+            audioUrl: audioUrl,
+            imageUrl: imageUrl,
         };
 
         // Insert the data into the questions table
@@ -191,19 +192,78 @@ const AddLayout = () => {
         setIsLoading(false);
     }
 
+    const uploadWritingQuestion = async () => {
+        try {
+            setIsLoading(true);
+            let imageUrl = null;
+            let audioUrl = null;
 
-    function extractLink(jsonObj) {
-        // Check if the provided object has a property named 'publicUrl'
-        if (jsonObj && jsonObj.publicUrl) {
-            // Return the value of 'publicUrl'
-            return jsonObj.publicUrl;
-        } else {
-            // If 'publicUrl' is not found, return an appropriate message or handle the error
-            return "";
+            if (questionImageFile.length > 0) {
+                const { error: imgUploadError } = await supabase.storage.from("question_image").upload('Writing/' + questionImageFile[0].name, questionImageFile[0]);
+                if (imgUploadError) {
+                    throw imgUploadError;
+                }
+                const { data: imgUrlData } = await supabase.storage.from('question_image').getPublicUrl('Writing/' + questionImageFile[0].name);
+                imageUrl = imgUrlData.publicUrl;
+                setImageUrl(imageUrl);
+            }
+
+            if (questionAudioFile.length > 0) {
+                const { error: audioUploadError } = await supabase.storage.from("audio").upload('Writing/' + questionAudioFile[0].name, questionAudioFile[0]);
+                if (audioUploadError) {
+                    throw audioUploadError;
+                }
+                const { data: audioUrlData } = await supabase.storage.from('audio').getPublicUrl('Writing/' + questionAudioFile[0].name);
+                audioUrl = audioUrlData.publicUrl;
+                setAudioUrl(audioUrl);
+            }
+
+            const formattedQuestionsData = questionsData.map((questionObj) => {
+                const answers = questionObj.answers.map(answerObj => answerObj.answer);
+                const correctAnswerIndex = questionObj.answers.findIndex(answer => answer.isCorrect);
+
+                return {
+                    question: questionObj.question,
+                    explanation: questionObj.explanation,
+                    answers: answers,
+                    correct_answer: correctAnswerIndex
+                };
+            });
+
+            const dataToInsert = {
+                test_id: selectedTypeID,
+                part_id: partID,
+                questions: formattedQuestionsData.map(q => q.question),
+                answers: formattedQuestionsData.map(q => ({
+                    answers: q.answers,
+                    explanation: q.explanation,
+                    correct_answer: q.correct_answer
+                })),
+                audiourl: audioUrl,
+                imageurl: imageUrl,
+            };
+
+            console.log(dataToInsert);
+
+            const { data, error } = await supabase
+                .from('question')
+                .insert(dataToInsert);
+
+            if (error) {
+                console.error('Error uploading listening question:', error);
+                toast.error('Có lỗi xảy ra khi tạo câu hỏi');
+            } else {
+                console.log('Listening question uploaded successfully:', data);
+                toast.success('Câu hỏi đã được tạo thành công');
+            }
+
+        } catch (error) {
+            console.error('Error:', error);
+            toast.error('Có lỗi xảy ra khi tạo câu hỏi');
+        } finally {
+            setIsLoading(false);
         }
-    }
-
-
+    };
 
 
     return (
@@ -215,12 +275,13 @@ const AddLayout = () => {
                 </div>
             ) : (
                 <>
-                    <SelectQuestionType setQuestionType={setQuestionType} setSelectedTypeID={setSelectedTypeID} />
+                    <SelectQuestionType setQuestionType={setQuestionType} setSelectedTypeID={setSelectedTypeID} selectedTypeID={null} />
                     {questionType === 'Reading' && (
                         <div>
-                            <SelectPart questionType={questionType} setPartID={setPartID} />
+                            <SelectPart questionType={questionType} setPartID={setPartID} partID={null} />
                             <ReadingQuestionLayout
                                 setQuestionsData={setQuestionsData}
+                                questionsData={null}
                             />
                             <Link
                                 href="#"
@@ -236,13 +297,16 @@ const AddLayout = () => {
 
                     {questionType == 'Listening' && (
                         <div>
-                            <SelectPart questionType={questionType} setPartID={setPartID} />
+                            <SelectPart questionType={questionType} setPartID={setPartID} partID={null} />
                             <ListeningQuestionLayout
                                 setQuestionsData={setQuestionsData}
                                 questionImageFile={questionImageFile}
                                 setQuestionImageFile={setQuestionImageFile}
                                 questionAudioFile={questionAudioFile}
                                 setQuestionAudioFile={setQuestionAudioFile}
+                                defaultAudioQuestionFile={null}
+                                defaultQuestionImageFile={null}
+                                initialQuestionsData={null}
                             />
                             <Link
                                 href="#"
@@ -259,20 +323,39 @@ const AddLayout = () => {
 
                     {questionType == 'Speaking' && (
                         <div>
-                            <SelectPart questionType={questionType} setPartID={setPartID} />
+                            <SelectPart questionType={questionType} setPartID={setPartID} partID={null} />
                             <SpeakingQuestionLayout
                                 setAnswerSpeaking={setAnswerSpeaking}
                                 setExplanationSpeaking={setExplanationSpeaking}
                                 questionImageFile={questionImageFile}
                                 setQuestionImageFile={setQuestionImageFile}
-                                questionAudioFile={questionAudioFile}
-                                setQuestionAudioFile={setQuestionAudioFile}
                             />
                             <Link
                                 href="#"
                                 className="w-full mt-5 inline-flex items-center justify-center rounded-md bg-meta-3 px-10 py-4 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-10"
                                 onClick={() => {
                                     uploadSpeakingQuestion();
+                                }}
+                            >
+                                Tạo câu hỏi
+                            </Link>
+                        </div>
+                    )}
+
+                    {questionType == 'Writing' && (
+                        <div>
+                            <SelectPart questionType={questionType} setPartID={setPartID} partID={null} />
+                            <WritingQuestionLayout
+                                questionsData={null}
+                                setQuestionsData={setQuestionsData}
+                                questionImageFile={questionImageFile}
+                                setQuestionImageFile={setQuestionImageFile}
+                            />
+                            <Link
+                                href="#"
+                                className="w-full mt-5 inline-flex items-center justify-center rounded-md bg-meta-3 px-10 py-4 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-10"
+                                onClick={() => {
+                                    uploadWritingQuestion();
                                 }}
                             >
                                 Tạo câu hỏi

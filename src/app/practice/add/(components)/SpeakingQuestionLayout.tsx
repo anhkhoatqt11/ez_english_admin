@@ -1,12 +1,18 @@
 import { FileDialog } from '@/components/FileDialog'
 import { VideoDialog } from '@/components/ui/VideoDialog'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
-const SpeakingQuestionLayout = ({ setAnswerSpeaking, setExplanationSpeaking, questionImageFile, setQuestionImageFile, questionAudioFile, setQuestionAudioFile }) => {
+const SpeakingQuestionLayout = ({ answerSpeaking, explanationSpeaking, setAnswerSpeaking, setExplanationSpeaking, questionImageFile, setQuestionImageFile, defaultQuestionImageFile }) => {
 
     const [answer, setAnswerState] = useState("");
     const [explanation, setExplanationState] = useState("");
 
+    useEffect(() => {
+        setAnswerState(answerSpeaking);
+        setExplanationState(explanationSpeaking);
+        setAnswerSpeaking(answerSpeaking);
+        setExplanationSpeaking(explanationSpeaking);
+    }, [])
 
     const handleQuestionChange = (e) => {
         setAnswerState(e.target.value);
@@ -50,17 +56,15 @@ const SpeakingQuestionLayout = ({ setAnswerSpeaking, setExplanationSpeaking, que
                     File hình ảnh
                 </label>
                 <div className="w-1/3 h-41 border-1 rounded">
-                    {questionImageFile[0] != null && (
-                        <img
-                            src={
-                                questionImageFile[0]?.preview ||
-                                questionImageFile[0]?.url ||
-                                questionImageFile
-                            }
-                            alt={questionImageFile[0]?.name}
-                            className={`h-[360px] w-full rounded-md object-cover object-center`}
-                        />
-                    )}
+                    <img
+                        src={
+                            questionImageFile[0]?.preview ||
+                            questionImageFile[0]?.url ||
+                            defaultQuestionImageFile
+                        }
+                        alt={questionImageFile[0]?.name}
+                        className={`h-[360px] w-full rounded-md object-cover object-center`}
+                    />
                 </div>
 
 
@@ -76,7 +80,7 @@ const SpeakingQuestionLayout = ({ setAnswerSpeaking, setExplanationSpeaking, que
             </div>
 
 
-            <div className='mt-5'>
+            {/* <div className='mt-5'>
                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                     File âm thanh
                 </label>
@@ -91,7 +95,7 @@ const SpeakingQuestionLayout = ({ setAnswerSpeaking, setExplanationSpeaking, que
                     disabled={false}
                     className={`mt-2 p-0 px-6 text-black hover:text-black`}
                 />
-            </div>
+            </div> */}
         </div>
     )
 }

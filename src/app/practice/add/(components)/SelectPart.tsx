@@ -2,16 +2,20 @@
 
 import React, { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { Square, Target } from "lucide-react";
+import { Target } from "lucide-react";
 
+type SelectPartProps = {
+    questionType: string;
+    setPartID: (value: number) => void;
+    partID: number; // Accept partID as a prop
+};
 
-const SelectPart = ({ questionType, setPartID }) => {
+const SelectPart: React.FC<SelectPartProps> = ({ questionType, setPartID, partID }) => {
     const supabase = createClient();
 
     const [selectedOption, setSelectedOption] = useState<string>("");
     const [isOptionSelected, setIsOptionSelected] = useState<boolean>(false);
-    const [partList, setPartList] = useState<any>([]);
-
+    const [partList, setPartList] = useState<{ id: number; part_name: string }[]>([]);
 
     const changeTextColor = () => {
         setIsOptionSelected(true);
@@ -21,26 +25,32 @@ const SelectPart = ({ questionType, setPartID }) => {
         const fetchData = async () => {
             const { data: partlist, error } = await supabase
                 .from("part")
-                .select(`id,part_name`)
+                .select("id, part_name")
                 .eq("skill", questionType);
-            setPartList(partlist || []);
+
+            if (error) {
+                console.error('Error fetching parts:', error);
+            } else {
+                setPartList(partlist || []);
+            }
         };
         fetchData();
-    }, [])
-
-
+    }, [supabase, questionType]);
 
     useEffect(() => {
-        // Find the corresponding type object
+        // Set initial selected option based on partID
+        const selectedPart = partList.find((item) => item.id === partID);
+        if (selectedPart) {
+            setSelectedOption(selectedPart.id.toString());
+            changeTextColor();
+        }
+    }, [partID, partList]);
 
-        // const selectedType = partList.find((item: any) => item.id === selectedOption);
-        // if (selectedType) {
-        //     setPartID(selectedType.id);
-        // }
-        // console.log(selectedType.id);
-        console.log(selectedOption);
-        setPartID(parseInt(selectedOption));
-    }, [selectedOption]);
+    useEffect(() => {
+        if (selectedOption) {
+            setPartID(parseInt(selectedOption));
+        }
+    }, [selectedOption, setPartID]);
 
     return (
         <div className="mt-2">
@@ -66,7 +76,7 @@ const SelectPart = ({ questionType, setPartID }) => {
                         Lựa chọn phần
                     </option>
                     {partList.map((item, key) => (
-                        <option key={key} value={item.id} className="text-body dark:text-bodydark">
+                        <option key={key} value={item.id.toString()} className="text-body dark:text-bodydark">
                             {item.part_name}
                         </option>
                     ))}
@@ -91,7 +101,8 @@ const SelectPart = ({ questionType, setPartID }) => {
                     </svg>
                 </span>
             </div>
-        </div>)
-}
+        </div>
+    );
+};
 
-export default SelectPart
+export default SelectPart;

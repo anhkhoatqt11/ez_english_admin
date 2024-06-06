@@ -1,38 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Answers from './Answers';
 
-const ReadingQuestionLayout = ({ setQuestionsData }) => {
-    const [questionsData, setQuestionsDataState] = useState([
-        {
-            question: "",
-            explanation: "",
-            answers: [
-                { answer: "", isCorrect: false },
-                { answer: "", isCorrect: false },
-                { answer: "", isCorrect: false },
-                { answer: "", isCorrect: false }
-            ],
-        },
-    ]);
+const ReadingQuestionLayout = ({ questionsData, setQuestionsData }) => {
+    const [localQuestionsData, setLocalQuestionsData] = useState([]);
+
+    useEffect(() => {
+        if (questionsData == null) {
+            setLocalQuestionsData([
+                {
+                    question: "",
+                    explanation: "",
+                    answers: [
+                        { answer: "", isCorrect: false },
+                        { answer: "", isCorrect: false },
+                        { answer: "", isCorrect: false },
+                        { answer: "", isCorrect: false }
+                    ],
+                },
+            ]);
+        } else {
+            setLocalQuestionsData(questionsData);
+        }
+    }, [questionsData]);
 
     const handleQuestionChange = (index, newQuestion) => {
-        const updatedQuestionsData = [...questionsData];
+        const updatedQuestionsData = [...localQuestionsData];
         updatedQuestionsData[index].question = newQuestion;
-        setQuestionsDataState(updatedQuestionsData);
+        setLocalQuestionsData(updatedQuestionsData);
         setQuestionsData(updatedQuestionsData);
     };
 
     const handleExplanationChange = (index, newExplanation) => {
-        const updatedQuestionsData = [...questionsData];
+        const updatedQuestionsData = [...localQuestionsData];
         updatedQuestionsData[index].explanation = newExplanation;
-        setQuestionsDataState(updatedQuestionsData);
+        setLocalQuestionsData(updatedQuestionsData);
         setQuestionsData(updatedQuestionsData);
     };
 
     const handleAnswerChange = (qIndex, aIndex, newAnswer) => {
-        const updatedQuestionsData = [...questionsData];
+        const updatedQuestionsData = [...localQuestionsData];
         updatedQuestionsData[qIndex].answers[aIndex] = newAnswer;
-        setQuestionsDataState(updatedQuestionsData);
+        setLocalQuestionsData(updatedQuestionsData);
         setQuestionsData(updatedQuestionsData);
     };
 
@@ -47,19 +55,20 @@ const ReadingQuestionLayout = ({ setQuestionsData }) => {
                 { answer: "", isCorrect: false }
             ],
         };
-        setQuestionsDataState([...questionsData, newQuestion]);
-        setQuestionsData([...questionsData, newQuestion]);
+        const updatedQuestionsData = [...localQuestionsData, newQuestion];
+        setLocalQuestionsData(updatedQuestionsData);
+        setQuestionsData(updatedQuestionsData);
     };
 
     const handleRemoveQuestion = (index) => {
-        const updatedQuestionsData = questionsData.filter((_, qIndex) => qIndex !== index);
-        setQuestionsDataState(updatedQuestionsData);
+        const updatedQuestionsData = localQuestionsData.filter((_, qIndex) => qIndex !== index);
+        setLocalQuestionsData(updatedQuestionsData);
         setQuestionsData(updatedQuestionsData);
     };
 
     return (
         <div>
-            {questionsData.map((questionData, qIndex) => (
+            {localQuestionsData.map((questionData, qIndex) => (
                 <div key={qIndex} className="mt-5">
                     <hr className='mb-5' />
                     <div>
@@ -101,7 +110,7 @@ const ReadingQuestionLayout = ({ setQuestionsData }) => {
                     </div>
                     <button
                         type="button"
-                        className="mt-5 px-4 py-2 bg-red-500 text-white rounded-lg bg-red"
+                        className="mt-5 px-4 py-2 text-white rounded-lg bg-red"
                         onClick={() => handleRemoveQuestion(qIndex)}
                     >
                         Xóa câu hỏi

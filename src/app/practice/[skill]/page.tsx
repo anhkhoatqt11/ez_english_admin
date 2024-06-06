@@ -1,7 +1,6 @@
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import React from "react";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
-import { PartDetailManagement } from "./PartDetailManagement";
 import PartList from "../(components)/PartList";
 import { createClient } from "@/utils/supabase/client";
 
@@ -17,7 +16,8 @@ export default async function page({ params }) {
             skill,
             questions:question (
                 part_id
-            )
+            ),
+            speaking_questions:speaking_question (part_id)
         `)
         .eq("skill", params.skill);
 
@@ -28,7 +28,7 @@ export default async function page({ params }) {
 
     const partsWithQuestionCount = partlist.map(part => ({
         ...part,
-        question_count: part.questions.length
+        question_count: part.questions.length + part.speaking_questions.length
     }));
 
     return (
