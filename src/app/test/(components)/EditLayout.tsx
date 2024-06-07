@@ -1,14 +1,11 @@
 "use client";
 
-// import ReadingQuestionLayout from '@/app/practice/add/(components)/ReadingQuestionLayout';
-// import SelectPart from '@/app/practice/add/(components)/SelectPart';
-// import SelectQuestionType from '@/app/practice/add/(components)/SelectQuestionType';
-// import ListeningQuestionLayout from '@/app/practice/add/(components)/ListeningQuestionLayout';
-// import SpeakingQuestionLayout from '@/app/practice/add/(components)/SpeakingQuestionLayout';
-// import WritingQuestionLayout from '@/app/practice/add/(components)/WritingQuestionLayout';
-import SpeakingQuestionLayout from '@/app/practice/add/(components)/SpeakingQuestionLayout';
+import ReadingQuestionLayout from '@/app/practice/add/(components)/ReadingQuestionLayout';
 import SelectPart from '@/app/practice/add/(components)/SelectPart';
 import SelectQuestionType from '@/app/practice/add/(components)/SelectQuestionType';
+import ListeningQuestionLayout from '@/app/practice/add/(components)/ListeningQuestionLayout';
+import SpeakingQuestionLayout from '@/app/practice/add/(components)/SpeakingQuestionLayout';
+import WritingQuestionLayout from '@/app/practice/add/(components)/WritingQuestionLayout';
 import Loader from '@/components/Loader';
 import { createClient } from '@/utils/supabase/client';
 import React, { useEffect, useState } from 'react';
@@ -22,6 +19,7 @@ const EditLayout = ({ id }) => {
     const [imageUrl, setImageUrl] = useState('');
     const [audioUrl, setAudioUrl] = useState('');
     const [partID, setPartID] = useState(0);
+    const [questionsData, setQuestionsData] = useState([]);
     const [selectedTypeID, setSelectedTypeID] = useState(0);
     const [questionImageFile, setQuestionImageFile] = useState([]);
     const [questionAudioFile, setQuestionAudioFile] = useState([]);
@@ -35,22 +33,30 @@ const EditLayout = ({ id }) => {
     useEffect(() => {
         const fetchQuestion = async () => {
             const { data, error } = await supabase
-                .from('speaking_question')
+                .from('test_question')
                 .select('*')
-                .eq('question_id', id)
+                .eq('id', id)
                 .single();
 
             if (error) {
                 console.error('Error fetching question:', error);
                 toast.error('Có lỗi xảy ra khi lấy dữ liệu câu hỏi');
             } else {
-                const { answer, imageUrl, audiourl, explanation, skill_id, part_id } = data;
+                console.log(data);
+                const { question, answer, imageUrl, audioUrl, skill_id, part_id } = data;
+                const answers = answer;
+                setQuestionsData(question.map((q, index) => ({
+                    question: q,
+                    explanation: answer[index].explanation,
+                    answers: answers[index].answers.map((answer, i) => ({
+                        answer,
+                        isCorrect: i === answers[index].correct_answer
+                    }))
+                })));
                 setImageUrl(imageUrl);
-                setAudioUrl(audiourl);
-                setAnswerSpeaking(answer);
-                setExplanationSpeaking(explanation);
+                setAudioUrl(audioUrl);
                 setDefaultQuestionImageFile(imageUrl);
-                setDefaultAudioQuestionFile(audiourl);
+                setDefaultAudioQuestionFile(audioUrl);
                 setSelectedTypeID(skill_id);
                 setPartID(part_id);
                 setQuestionType(skill_id === 1 ? 'Reading' : skill_id === 2 ? 'Listening' : skill_id === 3 ? 'Speaking' : 'Writing');
@@ -67,31 +73,48 @@ const EditLayout = ({ id }) => {
         try {
             // Upload new image if any
             if (questionImageFile.length > 0) {
-                const { error: imgUploadError } = await supabase.storage.from("question_image").upload('Speaking/' + questionImageFile[0].name, questionImageFile[0]);
-                const { data: imgUrl } = await supabase.storage.from('question_image').getPublicUrl('Speaking/' + questionImageFile[0].name);
+                const { error: imgUploadError } = await supabase.storage.from("question_image").upload(questionType + '/' + questionImageFile[0].name, questionImageFile[0]);
+                const { data: imgUrl } = await supabase.storage.from('question_image').getPublicUrl(questionType + '/' + questionImageFile[0].name);
                 setImageUrl(imgUrl.publicUrl);
             }
 
             // Upload new audio if any
             if (questionAudioFile.length > 0) {
-                const { error: audioUploadError } = await supabase.storage.from("audio").upload('Speaking/' + questionAudioFile[0].name, questionAudioFile[0]);
-                const { data: audioUrl } = await supabase.storage.from('audio').getPublicUrl('Speaking/' + questionAudioFile[0].name);
+                const { error: audioUploadError } = await supabase.storage.from("audio").upload(questionType + '/' + questionAudioFile[0].name, questionAudioFile[0]);
+                const { data: audioUrl } = await supabase.storage.from('audio').getPublicUrl(questionType + '/' + questionAudioFile[0].name);
                 setAudioUrl(audioUrl.publicUrl);
             }
+
+            // Transform the questionsData into the required format
+            const formattedQuestionsData = questionsData.map((questionObj) => {
+                const answers = questionObj.answers.map(answerObj => answerObj.answer);
+                const correctAnswerIndex = questionObj.answers.findIndex(answer => answer.isCorrect);
+
+                return {
+                    question: questionObj.question,
+                    explanation: questionObj.explanation,
+                    answers: answers,
+                    correct_answer: correctAnswerIndex
+                };
+            });
 
             const dataToUpdate = {
                 skill_id: selectedTypeID,
                 part_id: partID,
-                answer: answerSpeaking,
-                explanation: explanationSpeaking,
+                question: formattedQuestionsData.map(q => q.question),
+                answer: formattedQuestionsData.map(q => ({
+                    answers: q.answers,
+                    explanation: q.explanation,
+                    correct_answer: q.correct_answer
+                })),
                 audioUrl: audioUrl,
                 imageUrl: imageUrl,
             };
 
             const { data, error } = await supabase
-                .from('speaking_question')
+                .from('test_question')
                 .update(dataToUpdate)
-                .eq('question_id', id);
+                .eq('id', id);
 
             if (error) {
                 console.error('Error updating question:', error);
@@ -118,7 +141,7 @@ const EditLayout = ({ id }) => {
             ) : (
                 <>
                     <SelectQuestionType setQuestionType={setQuestionType} setSelectedTypeID={setSelectedTypeID} selectedTypeID={selectedTypeID} />
-                    {/* {questionType === 'Reading' && (
+                    {questionType === 'Reading' && (
                         <div>
                             <SelectPart questionType={questionType} setPartID={setPartID} partID={partID} />
                             <ReadingQuestionLayout
@@ -134,9 +157,9 @@ const EditLayout = ({ id }) => {
                                 Cập nhật câu hỏi
                             </button>
                         </div>
-                    )} */}
+                    )}
 
-                    {/* {questionType == 'Listening' && (
+                    {questionType == 'Listening' && (
                         <div>
                             <SelectPart questionType={questionType} setPartID={setPartID} partID={partID} />
                             <ListeningQuestionLayout
@@ -158,20 +181,16 @@ const EditLayout = ({ id }) => {
                                 Cập nhật câu hỏi
                             </button>
                         </div>
-                    )} */}
+                    )}
 
-                    {questionType == 'Speaking' && (
+                    {questionType == 'Writing' && (
                         <div>
                             <SelectPart questionType={questionType} setPartID={setPartID} partID={partID} />
-                            <SpeakingQuestionLayout
-                                setAnswerSpeaking={setAnswerSpeaking}
-                                setExplanationSpeaking={setExplanationSpeaking}
-                                answerSpeaking={answerSpeaking}
-                                explanationSpeaking={explanationSpeaking}
+                            <WritingQuestionLayout
+                                setQuestionsData={setQuestionsData}
+                                questionsData={questionsData}
                                 questionImageFile={questionImageFile}
                                 setQuestionImageFile={setQuestionImageFile}
-                                questionAudioFile={questionAudioFile}
-                                setQuestionAudioFile={setQuestionAudioFile}
                                 defaultQuestionImageFile={defaultQuestionImageFile}
                             />
                             <button
@@ -184,26 +203,6 @@ const EditLayout = ({ id }) => {
                             </button>
                         </div>
                     )}
-
-                    {/* {questionType == 'Writing' && (
-                        <div>
-                            <SelectPart questionType={questionType} setPartID={setPartID} partID={partID} />
-                            <WritingQuestionLayout
-                                setQuestionsData={setQuestionsData}
-                                questionsData={questionsData}
-                                questionImageFile={questionImageFile}
-                                setQuestionImageFile={setQuestionImageFile}
-                            />
-                            <button
-                                className="w-full mt-5 inline-flex items-center justify-center rounded-md bg-meta-3 px-10 py-4 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-10"
-                                onClick={() => {
-                                    updateQuestion();
-                                }}
-                            >
-                                Cập nhật câu hỏi
-                            </button>
-                        </div>
-                    )} */}
                 </>
             )}
         </div>

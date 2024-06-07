@@ -3,8 +3,7 @@
 import React from 'react';
 import { Accordion, AccordionItem } from "@nextui-org/react";
 import { useRouter } from "next/navigation";
-import { Button } from '@/components/ui/button';
-
+import { Button } from '@nextui-org/react';
 
 const PartList = ({ partname, partlist }) => {
     const router = useRouter();
@@ -37,15 +36,15 @@ const PartList = ({ partname, partlist }) => {
                         <p className="text-sm">{part.part_index}</p>
                     </div>
                     <div className="col-span-3 flex items-center">
-                        <p className="text-sm">{part.part_name}</p>
+                        <p className="text-sm font-bold">{part.part_name}</p>
                     </div>
                     <div className="col-span-2 flex items-center">
-                        <p className="text-sm">{part.question_count}</p>
+                        <p className="text-sm">{part.question_count} câu hỏi</p>
                     </div>
                     <div className="col-span-1 flex items-center">
                         <Button
                             onClick={() => router.push(`/practice/${partname}/${part.id}`)}
-                            className='text-white'
+                            className='text-white font-bold bg-blue-400'
                         >
                             Xem
                         </Button>

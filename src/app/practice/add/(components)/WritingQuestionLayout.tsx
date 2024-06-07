@@ -1,24 +1,55 @@
-import { FileDialog } from '@/components/FileDialog';
 import React, { useState, useEffect } from 'react';
+import { FileDialog } from '@/components/FileDialog';
 
 const WritingQuestionLayout = ({ questionsData, setQuestionsData, questionImageFile, setQuestionImageFile, defaultQuestionImageFile }) => {
+    const [localQuestionsData, setLocalQuestionsData] = useState([]);
+
+    useEffect(() => {
+        if (questionsData == null) {
+            setLocalQuestionsData([{
+                question: "",
+                explanation: ""
+            }]);
+        } else {
+            setLocalQuestionsData(questionsData);
+        }
+    }, [questionsData]);
 
     const handleQuestionChange = (index, newQuestion) => {
-        const updatedQuestionsData = [...questionsData];
+        const updatedQuestionsData = [...localQuestionsData];
         updatedQuestionsData[index].question = newQuestion;
+        setLocalQuestionsData(updatedQuestionsData);
         setQuestionsData(updatedQuestionsData);
     };
 
     const handleExplanationChange = (index, newExplanation) => {
-        const updatedQuestionsData = [...questionsData];
+        const updatedQuestionsData = [...localQuestionsData];
         updatedQuestionsData[index].explanation = newExplanation;
+        setLocalQuestionsData(updatedQuestionsData);
+        setQuestionsData(updatedQuestionsData);
+    };
+
+    const handleAddQuestion = () => {
+        const newQuestion = {
+            question: "",
+            explanation: ""
+        };
+        const updatedQuestionsData = [...localQuestionsData, newQuestion];
+        setLocalQuestionsData(updatedQuestionsData);
+        setQuestionsData(updatedQuestionsData);
+    };
+
+    const handleRemoveQuestion = (index) => {
+        const updatedQuestionsData = localQuestionsData.filter((_, qIndex) => qIndex !== index);
+        setLocalQuestionsData(updatedQuestionsData);
         setQuestionsData(updatedQuestionsData);
     };
 
     return (
         <div>
-            {questionsData.map((questionData, qIndex) => (
+            {localQuestionsData.map((questionData, qIndex) => (
                 <div key={qIndex} className="mt-5">
+                    <hr className='mb-5' />
                     <div>
                         <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                             Nhập câu hỏi
@@ -42,8 +73,22 @@ const WritingQuestionLayout = ({ questionsData, setQuestionsData, questionImageF
                             onChange={(e) => handleExplanationChange(qIndex, e.target.value)}
                         />
                     </div>
+                    <button
+                        type="button"
+                        className="mt-5 px-4 py-2 text-white rounded-lg bg-red"
+                        onClick={() => handleRemoveQuestion(qIndex)}
+                    >
+                        Xóa câu hỏi
+                    </button>
                 </div>
             ))}
+            <button
+                type="button"
+                className="mt-5 px-4 py-2 bg-primary text-white rounded-lg"
+                onClick={handleAddQuestion}
+            >
+                Thêm câu hỏi
+            </button>
             <div className='mt-5'>
                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                     File hình ảnh

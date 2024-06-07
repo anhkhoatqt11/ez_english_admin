@@ -31,23 +31,20 @@ const UserDataTable: React.FC<{ data: UserData[] }> = ({ data }) => {
                 </div>
 
                 <div className="grid grid-cols-6 border-t border-stroke px-4 py-4.5 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5">
-                    <div className="col-span-1 flex items-center">
+                    <div className="col-span-2 flex items-center">
                         <p className="font-medium">ID</p>
                     </div>
                     <div className="col-span-2 flex items-center">
                         <p className="font-medium">Email</p>
                     </div>
                     <div className="col-span-1 flex items-center">
-                        <p className="font-medium">Role</p>
+                        <p className="font-medium">Được tạo lúc</p>
                     </div>
                     <div className="col-span-1 flex items-center">
-                        <p className="font-medium">Phone</p>
+                        <p className="font-medium">Lần cuối đăng nhập</p>
                     </div>
                     <div className="col-span-1 flex items-center">
-                        <p className="font-medium">Created At</p>
-                    </div>
-                    <div className="col-span-1 flex items-center">
-                        <p className="font-medium">Last Sign In</p>
+                        <p className="font-medium">Hành động</p>
                     </div>
                 </div>
 
@@ -61,23 +58,17 @@ const UserDataTable: React.FC<{ data: UserData[] }> = ({ data }) => {
                                     : "grid grid-cols-6 border-t border-stroke px-4 py-4.5 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5 bg-white"
                             }
                         >
-                            <div className="col-span-1 flex items-center">
+                            <div className="col-span-2 flex items-center">
                                 <p className="text-sm text-black dark:text-white">{user.id}</p>
                             </div>
                             <div className="col-span-2 flex items-center">
                                 <p className="text-sm text-black dark:text-white">{user.email}</p>
                             </div>
                             <div className="col-span-1 flex items-center">
-                                <p className="text-sm text-black dark:text-white">{user.role}</p>
+                                <p className="text-sm text-black dark:text-white">{new Date(user.created_at).toString()}</p>
                             </div>
                             <div className="col-span-1 flex items-center">
-                                <p className="text-sm text-black dark:text-white">{user.phone}</p>
-                            </div>
-                            <div className="col-span-1 flex items-center">
-                                <p className="text-sm text-black dark:text-white">{user.created_at}</p>
-                            </div>
-                            <div className="col-span-1 flex items-center">
-                                <p className="text-sm text-black dark:text-white">{user.last_sign_in_at}</p>
+                                <p className="text-sm text-black dark:text-white">{new Date(user.last_sign_in_at).toString()}</p>
                             </div>
                         </div>
                     ))}

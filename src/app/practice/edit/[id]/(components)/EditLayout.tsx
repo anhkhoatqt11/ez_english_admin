@@ -42,7 +42,8 @@ const EditLayout = ({ id }) => {
                 console.error('Error fetching question:', error);
                 toast.error('Có lỗi xảy ra khi lấy dữ liệu câu hỏi');
             } else {
-                const { questions, answers, imageurl, audiourl, test_id, part_id } = data;
+                console.log(data);
+                const { questions, answers, imageurl, audiourl, skill_id, part_id } = data;
                 setQuestionsData(questions.map((q, index) => ({
                     question: q,
                     explanation: answers[index].explanation,
@@ -55,9 +56,9 @@ const EditLayout = ({ id }) => {
                 setAudioUrl(audiourl);
                 setDefaultQuestionImageFile(imageurl);
                 setDefaultAudioQuestionFile(audiourl);
-                setSelectedTypeID(test_id);
+                setSelectedTypeID(skill_id);
                 setPartID(part_id);
-                setQuestionType(test_id === 1 ? 'Reading' : test_id === 2 ? 'Listening' : test_id === 3 ? 'Speaking' : 'Writing');
+                setQuestionType(skill_id === 1 ? 'Reading' : skill_id === 2 ? 'Listening' : skill_id === 3 ? 'Speaking' : 'Writing');
             }
             setIsLoading(false);
         };
@@ -97,7 +98,7 @@ const EditLayout = ({ id }) => {
             });
 
             const dataToUpdate = {
-                test_id: selectedTypeID,
+                skill_id: selectedTypeID,
                 part_id: partID,
                 questions: formattedQuestionsData.map(q => q.question),
                 answers: formattedQuestionsData.map(q => ({

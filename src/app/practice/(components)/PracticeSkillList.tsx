@@ -3,8 +3,7 @@
 import React from 'react';
 import { Accordion, AccordionItem } from "@nextui-org/react";
 import { useRouter } from "next/navigation";
-import { Button } from '@/components/ui/button';
-
+import { Button } from '@nextui-org/react';
 
 const PracticeSkillList = ({ part }) => {
 
@@ -43,7 +42,7 @@ const PracticeSkillList = ({ part }) => {
                             onClick={() => {
                                 router.push(`/practice/add`);
                             }}
-                            className='text-white'
+                            className='text-white bg-green-500 font-bold hover:bg-black'
                         >
                             Tạo câu hỏi
                         </Button>
@@ -70,17 +69,17 @@ const PracticeSkillList = ({ part }) => {
                         <p className="text-sm">{index + 1}</p>
                     </div>
                     <div className="col-span-3 flex items-center">
-                        <p className="text-sm">{skill.skill}</p>
+                        <p className="text-sm font-bold">{skill.skill}</p>
                     </div>
                     <div className="col-span-2 flex items-center">
-                        <p className="text-sm">{skill.count}</p>
+                        <p className="text-sm">{skill.count} phần</p>
                     </div>
                     <div className="col-span-1 flex items-center">
                         <Button
                             onClick={() => {
                                 router.push(`/practice/${skill.skill}`);
                             }}
-                            className='text-white'
+                            className='text-white font-bold bg-blue-400'
                         >
                             Xem
                         </Button>

@@ -4,19 +4,25 @@ import DropdownDefault from '@/components/Dropdowns/DropdownDefault';
 import SelectGroupOne from '@/components/SelectGroup/SelectGroupOne';
 import SelectGroupTwo from '@/components/SelectGroup/SelectGroupTwo';
 import React from 'react'
-import SelectQuestionType from './SelectQuestionType';
-import ReadingQuestionLayout from './ReadingQuestionLayout';
+// import SelectQuestionType from './SelectQuestionType';
+// import ReadingQuestionLayout from './ReadingQuestionLayout';
 import Link from 'next/link';
 import { createClient } from "@/utils/supabase/client";
-import ListeningQuestionLayout from './ListeningQuestionLayout';
+// import ListeningQuestionLayout from './ListeningQuestionLayout';
 import Loader from '@/components/Loader';
 import SelectPart from './SelectPart';
 import toast, { Toaster } from 'react-hot-toast';
-import SpeakingQuestionLayout from './SpeakingQuestionLayout';
-import WritingQuestionLayout from './WritingQuestionLayout';
+// import SpeakingQuestionLayout from './SpeakingQuestionLayout';
+// import WritingQuestionLayout from './WritingQuestionLayout';
+import SelectQuestionType from '@/app/practice/add/(components)/SelectQuestionType';
 import { da } from 'date-fns/locale';
+import ReadingQuestionLayout from '@/app/practice/add/(components)/ReadingQuestionLayout';
+import ListeningQuestionLayout from '@/app/practice/add/(components)/ListeningQuestionLayout';
+import WritingQuestionLayout from '@/app/practice/add/(components)/WritingQuestionLayout';
+import SpeakingQuestionLayout from '@/app/practice/add/(components)/SpeakingQuestionLayout';
 
-const AddLayout = () => {
+
+const AddLayout = ({ testId }) => {
     const supabase = createClient();
     const [questionType, setQuestionType] = React.useState('');
     const [imageUrl, setImageUrl] = React.useState('');
@@ -70,10 +76,10 @@ const AddLayout = () => {
 
             // Prepare the data for the insert
             const dataToInsert = {
-                skill_id: selectedTypeID,
+                test_id: testId,
                 part_id: partID,
-                questions: formattedQuestionsData.map(q => q.question),
-                answers: formattedQuestionsData.map(q => ({
+                question: formattedQuestionsData.map(q => q.question),
+                answer: formattedQuestionsData.map(q => ({
                     answers: q.answers,
                     explanation: q.explanation,
                     correct_answer: q.correct_answer
@@ -82,7 +88,7 @@ const AddLayout = () => {
 
             // Insert the data into the questions table
             const { data, error } = await supabase
-                .from('question')
+                .from('test_question')
                 .insert(dataToInsert);
 
             if (error) {
@@ -104,14 +110,14 @@ const AddLayout = () => {
         try {
             setIsLoading(true);
             if (questionImageFile.length > 0) {
-                const { error: imgUploadError } = await supabase.storage.from("question_image").upload('Listening/' + questionImageFile[0].name, questionImageFile[0]);
-                const { data: imgUrl } = await supabase.storage.from('question_image').getPublicUrl('Listening/' + questionImageFile[0].name);
+                const { error: imgUploadError } = await supabase.storage.from("question_image").upload('Listening_Test/' + questionImageFile[0].name, questionImageFile[0]);
+                const { data: imgUrl } = await supabase.storage.from('question_image').getPublicUrl('Listening_Test/' + questionImageFile[0].name);
                 setImageUrl(imgUrl.publicUrl);
             }
 
             if (questionAudioFile.length > 0) {
-                const { error: audioUploadError } = await supabase.storage.from("audio").upload('Listening/' + questionAudioFile[0].name, questionAudioFile[0]);
-                const { data: audioUrl } = await supabase.storage.from('audio').getPublicUrl('Listening/' + questionAudioFile[0].name);
+                const { error: audioUploadError } = await supabase.storage.from("audio").upload('Listening_Test/' + questionAudioFile[0].name, questionAudioFile[0]);
+                const { data: audioUrl } = await supabase.storage.from('audio').getPublicUrl('Listening_Test/' + questionAudioFile[0].name);
                 setAudioUrl(audioUrl.publicUrl);
             }
 
@@ -133,21 +139,21 @@ const AddLayout = () => {
             });
 
             const dataToInsert = {
-                skill_id: selectedTypeID,
+                test_id: testId,
                 part_id: partID,
-                questions: formattedQuestionsData.map(q => q.question),
-                answers: formattedQuestionsData.map(q => ({
+                question: formattedQuestionsData.map(q => q.question),
+                answer: formattedQuestionsData.map(q => ({
                     answers: [],
                     explanation: q.explanation,
                     correct_answer: q.correct_answer
                 })),
-                audiourl: audioUrl,
-                imageurl: imageUrl,
+                audioUrl: audioUrl,
+                imageUrl: imageUrl,
             };
 
             // Insert the data into the questions table
             const { data, error } = await supabase
-                .from('question')
+                .from('test_question')
                 .insert(dataToInsert);
 
             if (error) {
@@ -165,48 +171,48 @@ const AddLayout = () => {
         }
     };
 
-    const uploadSpeakingQuestion = async () => {
-        setIsLoading(true);
-        if (questionImageFile.length > 0) {
-            const { error: imgUploadError } = await supabase.storage.from("question_image").upload('Speaking/' + questionImageFile[0].name, questionImageFile[0]);
-            const { data: imgUrl } = await supabase.storage.from('question_image').getPublicUrl('Speaking/' + questionImageFile[0].name);
-            setImageUrl(imgUrl.publicUrl);
-        }
+    // const uploadSpeakingQuestion = async () => {
+    //     setIsLoading(true);
+    //     if (questionImageFile.length > 0) {
+    //         const { error: imgUploadError } = await supabase.storage.from("question_image").upload('Speaking/' + questionImageFile[0].name, questionImageFile[0]);
+    //         const { data: imgUrl } = await supabase.storage.from('question_image').getPublicUrl('Speaking/' + questionImageFile[0].name);
+    //         setImageUrl(imgUrl.publicUrl);
+    //     }
 
-        if (questionAudioFile.length > 0) {
-            const { error: audioUploadError } = await supabase.storage.from("audio").upload('Speaking/' + questionAudioFile[0].name, questionAudioFile[0]);
-            const { data: audioUrl } = await supabase.storage.from('audio').getPublicUrl('Speaking/' + questionAudioFile[0].name);
-            setAudioUrl(audioUrl.publicUrl);
-        }
+    //     if (questionAudioFile.length > 0) {
+    //         const { error: audioUploadError } = await supabase.storage.from("audio").upload('Speaking/' + questionAudioFile[0].name, questionAudioFile[0]);
+    //         const { data: audioUrl } = await supabase.storage.from('question_image').getPublicUrl('Speaking/' + questionAudioFile[0].name);
+    //         setAudioUrl(audioUrl.publicUrl);
+    //     }
 
-        if (answerSpeaking.length == 0) {
-            toast.error("Vui lòng nhập câu trả lời");
-            return;
-        }
+    //     if (answerSpeaking.length == 0) {
+    //         toast.error("Vui lòng nhập câu trả lời");
+    //         return;
+    //     }
 
-        const dataToInsert = {
-            skill_id: selectedTypeID,
-            part_id: partID,
-            answer: answerSpeaking,
-            explanation: explanationSpeaking,
-            audioUrl: audioUrl,
-            imageUrl: imageUrl,
-        };
+    //     const dataToInsert = {
+    //         skill_id: selectedTypeID,
+    //         part_id: partID,
+    //         answer: answerSpeaking,
+    //         explanation: explanationSpeaking,
+    //         audioUrl: audioUrl,
+    //         imageUrl: imageUrl,
+    //     };
 
-        // Insert the data into the questions table
-        const { data, error } = await supabase
-            .from('speaking_question')
-            .insert(dataToInsert);
+    //     // Insert the data into the questions table
+    //     const { data, error } = await supabase
+    //         .from('speaking_question')
+    //         .insert(dataToInsert);
 
-        if (error) {
-            console.error('Error uploading speaking question:', error);
-            toast.error('Có lỗi xảy ra khi tạo câu hỏi');
-        } else {
-            console.log('Speaking question uploaded successfully:', data);
-            toast.success('Câu hỏi đã được tạo thành công');
-        }
-        setIsLoading(false);
-    }
+    //     if (error) {
+    //         console.error('Error uploading speaking question:', error);
+    //         toast.error('Có lỗi xảy ra khi tạo câu hỏi');
+    //     } else {
+    //         console.log('Speaking question uploaded successfully:', data);
+    //         toast.success('Câu hỏi đã được tạo thành công');
+    //     }
+    //     setIsLoading(false);
+    // }
 
     const uploadWritingQuestion = async () => {
         try {
@@ -267,7 +273,7 @@ const AddLayout = () => {
             console.log(dataToInsert);
 
             const { data, error } = await supabase
-                .from('question')
+                .from('test_question')
                 .insert(dataToInsert);
 
             if (error) {
@@ -296,6 +302,7 @@ const AddLayout = () => {
                 </div>
             ) : (
                 <>
+                    <h1 className="text-2xl font-semibold text-black dark:text-white">Tạo câu hỏi</h1>
                     <SelectQuestionType setQuestionType={setQuestionType} setSelectedTypeID={setSelectedTypeID} selectedTypeID={null} />
                     {questionType === 'Reading' && (
                         <div>
@@ -344,7 +351,7 @@ const AddLayout = () => {
 
                     {questionType == 'Speaking' && (
                         <div>
-                            <SelectPart questionType={questionType} setPartID={setPartID} partID={null} />
+                            {/* <SelectPart questionType={questionType} setPartID={setPartID} partID={null} />
                             <SpeakingQuestionLayout
                                 setAnswerSpeaking={setAnswerSpeaking}
                                 setExplanationSpeaking={setExplanationSpeaking}
@@ -359,7 +366,8 @@ const AddLayout = () => {
                                 }}
                             >
                                 Tạo câu hỏi
-                            </Link>
+                            </Link> */}
+                            <h1>Thi thử không hỗ trợ kỹ năng Nói</h1>
                         </div>
                     )}
 

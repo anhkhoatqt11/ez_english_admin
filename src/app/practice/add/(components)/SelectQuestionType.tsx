@@ -13,7 +13,7 @@ const SelectQuestionType: React.FC<SelectQuestionTypeProps> = ({ setQuestionType
 
     const [selectedOption, setSelectedOption] = useState<string>("");
     const [isOptionSelected, setIsOptionSelected] = useState<boolean>(false);
-    const [type, setType] = useState<{ test_id: number; skill_type: string }[]>([]);
+    const [type, setType] = useState<{ xid: number; skill_type: string }[]>([]);
     const [disabled, setDisabled] = useState<boolean>(false);
 
     const changeTextColor = () => {
@@ -22,7 +22,7 @@ const SelectQuestionType: React.FC<SelectQuestionTypeProps> = ({ setQuestionType
 
     useEffect(() => {
         const fetchData = async () => {
-            const { data: type_list, error } = await supabase.from("skill").select("test_id, skill_type");
+            const { data: type_list, error } = await supabase.from("skill").select("id, skill_type");
             if (error) {
                 console.error('Error fetching skill types:', error);
             } else {
@@ -34,7 +34,7 @@ const SelectQuestionType: React.FC<SelectQuestionTypeProps> = ({ setQuestionType
 
     useEffect(() => {
         // Set initial selected option based on selectedTypeID
-        const selectedType = type.find((item) => item.test_id === selectedTypeID);
+        const selectedType = type.find((item) => item.id === selectedTypeID);
         if (selectedType) {
             setSelectedOption(selectedType.skill_type);
             setQuestionType(selectedType.skill_type);
@@ -49,7 +49,7 @@ const SelectQuestionType: React.FC<SelectQuestionTypeProps> = ({ setQuestionType
         // Find the corresponding type object
         const selectedType = type.find((item) => item.skill_type === selectedOption);
         if (selectedType) {
-            setSelectedTypeID(selectedType.test_id);
+            setSelectedTypeID(selectedType.id);
         }
     }, [selectedOption, setQuestionType, setSelectedTypeID, type]);
 
