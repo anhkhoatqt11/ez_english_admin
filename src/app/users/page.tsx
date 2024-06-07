@@ -28,7 +28,7 @@ const BasicChartPage: React.FC = async () => {
     // return <pre>{JSON.stringify(users, null, 2)}</pre>
     return (
         <DefaultLayout>
-            <Breadcrumb pageName="Users" />
+            <Breadcrumb pageName="Người dùng" />
             <div className="flex flex-col gap-10">
                 <UserDataTable data={users} />
             </div>
